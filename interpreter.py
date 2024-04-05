@@ -4,7 +4,7 @@ from Expr import Expr, Binary, Ternary, Grouping, Literal, Unary, Variable, Assi
 from tokentype import TokenType as TT
 from ttoken import Token
 from error import ErrorHandler, LoxRuntimeError
-from environment import Environment
+from environment import Environment, Unitialized
 
 
 class Interpreter(StmtVisitor, ExprVisitor):
@@ -175,7 +175,7 @@ class Interpreter(StmtVisitor, ExprVisitor):
         print(self._stringify(value))
 
     def visit_var_stmt(self, stmt: Var) -> None:
-        value = None
+        value = Unitialized()
         if stmt.initializer is not None:
             value = self._evaluate(stmt.initializer)
 

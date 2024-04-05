@@ -17,12 +17,15 @@ class Environment:
 
     def get(self, name: Token) -> object:
         try:
-            return self._values[name.lexeme]
+            value = self._values[name.lexeme]
+            if isinstance(value, Unitialized):
+                raise LoxRuntimeError(name, f"Uninitialized variable '{name.lexeme}'.")
+            return value
         except KeyError:
             if self._enclosing is not None:
                 return self._enclosing.get(name)
 
-            LoxRuntimeError(name, f"Undefined variable '{name.lexeme}'.")
+            raise LoxRuntimeError(name, f"Undefined variable '{name.lexeme}'.")
 
     def assign(self, name: Token, value: object) -> None:
         if name.lexeme in self._values.keys():
@@ -34,3 +37,7 @@ class Environment:
             return
 
         raise LoxRuntimeError(name, f"Undefined variable '{name.lexeme}'.")
+
+
+class Unitialized:
+    pass
