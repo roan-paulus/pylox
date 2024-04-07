@@ -1,0 +1,54 @@
+print "one";
+print true;
+print 2 + 1;
+print false ? 1 : false ? 2 : true ? "working ternary statement": "not working ternary";
+// A comment
+var a = "global a";
+var b = "global b";
+var c = "global c";
+{
+    var a = "outer a";
+    var b = "outer b";
+    {
+        var a = "inner a";
+        print a;
+        print b;
+        print c;
+    }
+    print a;
+    print b;
+    print c;
+}
+print a;
+print b;
+print c;
+
+var a = 1;
+{
+    var a = a + 2;
+    print a;
+}
+
+if (true) print "if and";
+
+if (false) print "ERROR in second IF"; else print "else works.";
+
+print "hi" or 2; // "hi".
+print nil or "yes"; // "yes"
+print "yes" and "second"; // "second"
+print false and "right"; // false
+
+var message = "Print this but only if this message is truthy.";
+if (message) {
+    print message;
+    print "Two statements in executed then block!";
+}
+else {
+    print "The message was not truthy.";
+}
+
+var w_index = 0;
+while (w_index != 10) {
+    print "Test While loop: " + w_index;
+    w_index = w_index + 1;
+}

@@ -1,6 +1,6 @@
 from ttoken import Token
 from Expr import Expr, Variable, Binary, Ternary, Unary, Literal, Grouping, Assign, Logical
-from Stmt import Stmt, Var, Print, ExprStmt, Block, If
+from Stmt import Stmt, Var, Print, ExprStmt, Block, If, While
 from tokentype import TokenType
 from error import ErrorHandler
 
@@ -22,16 +22,16 @@ class Parser:
         return statements
 
     def _comma_expression(self) -> Expr:
-        expr: Expr = self._expresssion()
+        expr: Expr = self._expression()
 
         while self._match(TokenType.COMMA):
             operator: Token = self._previous()
-            right: Expr = self._expresssion()
+            right: Expr = self._expression()
             expr = Binary(expr, operator, right)
 
         return expr
 
-    def _expresssion(self) -> Expr:
+    def _expression(self) -> Expr:
         return self._ternary()
 
     def _declaration(self):
@@ -44,20 +44,64 @@ class Parser:
             return None
 
     def _statement(self):
+        if self._match(TokenType.FOR):
+            return self._for_statement()
         if self._match(TokenType.IF):
             return self._if_statement()
-
         if self._match(TokenType.PRINT):
             return self._print_statement()
-
+        if self._match(TokenType.WHILE):
+            return self._while_statement()
         if self._match(TokenType.LEFT_BRACE):
             return Block(self._block())
 
         return self._expression_statement()
 
+    def _for_statement(self):
+        self._consume(TokenType.LEFT_PAREN, "Expect '(' after 'for'.")
+
+        initializer: Stmt
+        if self._match(TokenType.SEMICOLON):
+            initializer = None
+        elif self._match(TokenType.VAR):
+            initializer = self._var_declaration()
+        else:
+            initializer = self._expression_statement()
+
+        condition: Expr = None
+        if not self._check(TokenType.SEMICOLON):
+            condition = self._expression()
+        self._consume(TokenType.SEMICOLON, "Expect ';' after loop condition.")
+
+        increment: Expr = None
+        if not self._check(TokenType.RIGHT_PAREN):
+            increment = self._expression()
+        self._consume(TokenType.RIGHT_PAREN, "Expect ')' after for clauses.")
+
+        body: Stmt = self._statement()
+
+        if increment is not None:
+            body = Block([
+                body,
+                ExprStmt(increment)
+            ])
+
+        if condition is None:
+            condition = Literal(True)
+
+        body = While(condition, body)
+
+        if initializer is not None:
+            body = Block([
+                initializer,
+                body,
+            ])
+
+        return body
+
     def _if_statement(self):
         self._consume(TokenType.LEFT_PAREN, "Expect '(' after 'if'.")
-        condition: Expr = self._expresssion()
+        condition: Expr = self._expression()
         self._consume(TokenType.RIGHT_PAREN, "Expect ')' after if condition.")
 
         then_branch: Stmt = self._statement()
@@ -68,7 +112,7 @@ class Parser:
         return If(condition, then_branch, else_branch)
 
     def _print_statement(self):
-        value: Expr = self._expresssion()
+        value: Expr = self._expression()
         self._consume(TokenType.SEMICOLON, "Expect ';' after value.")
         return Print(value)
 
@@ -77,13 +121,21 @@ class Parser:
 
         initializer: Expr | None = None
         if self._match(TokenType.EQUAL):
-            initializer = self._expresssion()
+            initializer = self._expression()
 
         self._consume(TokenType.SEMICOLON, "Expect ';' after variable declaration.")
         return Var(name, initializer)
 
+    def _while_statement(self):
+        self._consume(TokenType.LEFT_PAREN, "Expect '(' after 'while'.")
+        expr: Expr = self._expression()
+        self._consume(TokenType.RIGHT_PAREN, "Expect ')' after condition.")
+        body: Stmt = self._statement()
+
+        return While(expr, body)
+
     def _expression_statement(self):
-        value: Expr = self._expresssion()
+        value: Expr = self._expression()
         self._consume(TokenType.SEMICOLON, "Expect ';' after value.")
         return ExprStmt(value)
 
@@ -135,13 +187,13 @@ class Parser:
             return expr
 
         operator: Token = self._previous()
-        left: Expr = self._expresssion()
+        left: Expr = self._expression()
 
         branch_operator: Token = self._advance()
         if branch_operator.token_type != TokenType.COLON:
             raise self._error(branch_operator, "Expected colon in ternary.")
 
-        right: Expr = self._expresssion()
+        right: Expr = self._expression()
         expr = Ternary(expr, operator, left, branch_operator, right)
 
         return expr
@@ -208,7 +260,7 @@ class Parser:
             return Variable(self._previous())
 
         if self._match(TokenType.LEFT_PAREN):
-            expr: Expr = self._expresssion()
+            expr: Expr = self._expression()
             self._consume(TokenType.RIGHT_PAREN, "Expect ')' after expression.")
             return Grouping(expr)
 

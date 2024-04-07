@@ -1,5 +1,5 @@
 from visitor import StmtVisitor, ExprVisitor
-from Stmt import Stmt, ExprStmt, Print, Var, If
+from Stmt import Stmt, ExprStmt, Print, Var, If, While
 from Expr import Expr, Binary, Ternary, Grouping, Literal, Unary, Variable, Assign, Logical
 from tokentype import TokenType as TT
 from ttoken import Token
@@ -121,6 +121,10 @@ class Interpreter(StmtVisitor, ExprVisitor):
 
     def visit_variable_expr(self, expr: Variable) -> object:
         return self._environment.get(expr.name)
+
+    def visit_while_stmt(self, stmt: While) -> None:
+        while self._is_truthy(self._evaluate(stmt.condition)):
+            self._execute(stmt.body)
 
     def _check_number_operand(self, operator: Token, operand: object):
         if isinstance(operand, float):

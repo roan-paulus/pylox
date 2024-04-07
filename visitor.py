@@ -62,3 +62,7 @@ class StmtVisitor(ABC):
     def visit_if_stmt(self, stmt: If):
         pass
 
+    @abstractmethod
+    def visit_while_stmt(self, stmt: While):
+        pass
+

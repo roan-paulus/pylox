@@ -47,7 +47,7 @@ def main():
             "Print | expression: Expr",
             "Var | name: Token, initializer: Expr",
             "If | condition: Expr, then_branch: Stmt, else_branch: Stmt",
-            # "While | condition, body",
+            "While | condition: Expr, body: Stmt",
             # "Function | name, params, body",
             # "Return | keyword, value",
             # "Class | name, superclass, methods",
