@@ -25,6 +25,10 @@ class ExprVisitor(ABC):
         pass
 
     @abstractmethod
+    def visit_logical_expr(self, expr: Logical):
+        pass
+
+    @abstractmethod
     def visit_unary_expr(self, expr: Unary):
         pass
 
@@ -52,5 +56,9 @@ class StmtVisitor(ABC):
 
     @abstractmethod
     def visit_var_stmt(self, stmt: Var):
+        pass
+
+    @abstractmethod
+    def visit_if_stmt(self, stmt: If):
         pass
 

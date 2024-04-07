@@ -1,6 +1,6 @@
 from visitor import StmtVisitor, ExprVisitor
-from Stmt import Stmt, ExprStmt, Print, Var
-from Expr import Expr, Binary, Ternary, Grouping, Literal, Unary, Variable, Assign
+from Stmt import Stmt, ExprStmt, Print, Var, If
+from Expr import Expr, Binary, Ternary, Grouping, Literal, Unary, Variable, Assign, Logical
 from tokentype import TokenType as TT
 from ttoken import Token
 from error import ErrorHandler, LoxRuntimeError
@@ -94,6 +94,18 @@ class Interpreter(StmtVisitor, ExprVisitor):
     def visit_literal_expr(self, expr: Literal):
         return expr.value
 
+    def visit_logical_expr(self, expr: Logical):
+        left: object = self._evaluate(expr.left)
+
+        if expr.operator.token_type == TT.OR:
+            if self._is_truthy(left):
+                return left
+        else:
+            if not self._is_truthy(left):
+                return left
+
+        return self._evaluate(expr.right)
+
     def visit_unary_expr(self, expr: Unary):
         right: object = self._evaluate(expr.right)
 
@@ -169,6 +181,14 @@ class Interpreter(StmtVisitor, ExprVisitor):
 
     def visit_exprstmt_stmt(self, stmt: ExprStmt) -> None:
         self._evaluate(stmt.expression)
+
+    def visit_if_stmt(self, stmt: If):
+        if self._is_truthy(self._evaluate(stmt.condition)):
+            self._execute(stmt.then_branch)
+        elif stmt.else_branch is not None:
+            self._execute(stmt.else_branch)
+
+        return None
 
     def visit_print_stmt(self, stmt: Print) -> None:
         value: object = self._evaluate(stmt.expression)
