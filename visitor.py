@@ -36,6 +36,10 @@ class ExprVisitor(ABC):
     def visit_variable_expr(self, expr: Variable):
         pass
 
+    @abstractmethod
+    def visit_call_expr(self, expr: Call):
+        pass
+
 from Stmt import *
 from abc import ABC, abstractmethod
 
@@ -59,10 +63,18 @@ class StmtVisitor(ABC):
         pass
 
     @abstractmethod
+    def visit_function_stmt(self, stmt: Function):
+        pass
+
+    @abstractmethod
     def visit_if_stmt(self, stmt: If):
         pass
 
     @abstractmethod
     def visit_while_stmt(self, stmt: While):
+        pass
+
+    @abstractmethod
+    def visit_break_stmt(self, stmt: Break):
         pass
 

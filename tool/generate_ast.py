@@ -26,12 +26,7 @@ def main():
             "Logical | left: Expr, operator: Token, right: Expr",
             "Unary | operator: Token, right: Expr",
             "Variable | name: Token",
-            # "Call | callee, paren_loc, arguments",
-            # "Grouping | expression",
-            # "Get | object, name",
-            # "Set | object, name, value",
-            # "Self | keyword",
-            # "Super | keyword, method"
+            "Call | callee: Expr, paren: Token, arguments: list[Expr]",
         ],
         imports=[
             "from ttoken import Token",
@@ -46,11 +41,10 @@ def main():
             "ExprStmt | expression: Expr",
             "Print | expression: Expr",
             "Var | name: Token, initializer: Expr",
+            "Function | name: Token, params: list[Token], body: list[Stmt]",
             "If | condition: Expr, then_branch: Stmt, else_branch: Stmt",
             "While | condition: Expr, body: Stmt",
-            # "Function | name, params, body",
-            # "Return | keyword, value",
-            # "Class | name, superclass, methods",
+            "Break | stmt: Token",
         ],
         imports=[
             "from ttoken import Token",

@@ -1,0 +1,23 @@
+fun sayHi(first, last) {
+    print "Hi, " + first + " " + last + "!";
+}
+
+fun add(a, b) {
+    print a + b;
+}
+
+fun addAndHi() {
+    sayHi("Dear", "Reader");
+    add(1, 2);
+}
+
+fun recurse(n) {
+    if (n > 0) {
+        recurse(n - 1);
+    }
+    print n;
+}
+
+addAndHi();
+print "-----------";
+recurse(10);

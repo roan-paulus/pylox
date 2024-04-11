@@ -1,0 +1,22 @@
+var i = 0;
+while (i <= 10) {
+    if (i == 6) {
+        break;
+    }
+    print i;
+    i = i + 1;
+}
+
+for (var j = 0; j < 10; j = j + 1) {
+    for (var x = 0; x < 1; x = x + 1) {
+        while (true) {
+            break;
+        }
+        break;
+    }
+    if (j == 6) {
+        break;
+    }
+    print j;
+}
+

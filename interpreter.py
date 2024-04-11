@@ -1,16 +1,21 @@
 from visitor import StmtVisitor, ExprVisitor
-from Stmt import Stmt, ExprStmt, Print, Var, If, While
-from Expr import Expr, Binary, Ternary, Grouping, Literal, Unary, Variable, Assign, Logical
+from Stmt import Stmt, ExprStmt, Print, Var, If, While, Function
+from Expr import Expr, Binary, Ternary, Grouping, Literal, Unary, Variable, Assign, Logical, Call
 from tokentype import TokenType as TT
 from ttoken import Token
-from error import ErrorHandler, LoxRuntimeError
+from error import ErrorHandler, LoxRuntimeError, BreakError
 from environment import Environment, Unitialized
+from callable import LoxCallable, LoxFunction, LoxClock
 
 
 class Interpreter(StmtVisitor, ExprVisitor):
     def __init__(self, error_handler: ErrorHandler):
         self.error_handler = error_handler
-        self._environment: Environment = Environment()
+        self.globals: Environment = Environment()
+        self._environment: Environment = self.globals
+
+        # Define native functions
+        self.globals.define("clock", LoxClock())
 
     def interpret(self, statements: list[Stmt]):
         try:
@@ -83,6 +88,24 @@ class Interpreter(StmtVisitor, ExprVisitor):
         # Unreachable.
         return None
 
+    def visit_call_expr(self, expr: Call) -> object:
+        callee: object = self._evaluate(expr.callee)
+
+        arguments: list[object] = []
+        for argument in expr.arguments:
+            arguments.append(self._evaluate(argument))
+
+        if not isinstance(callee, LoxCallable):
+            raise LoxRuntimeError(expr.paren, "Can only call functions and classes.")
+
+        function: LoxCallable = callee
+        if len(arguments) != function.arity():
+            raise LoxRuntimeError(
+                expr.paren, f"Expected {function.arity()} arguments but got {len(arguments)}."
+            )
+
+        return function.call(self, arguments)
+
     def visit_ternary_expr(self, expr: Ternary):
         if self._evaluate(expr.condition):
             return self._evaluate(expr.left)
@@ -123,8 +146,14 @@ class Interpreter(StmtVisitor, ExprVisitor):
         return self._environment.get(expr.name)
 
     def visit_while_stmt(self, stmt: While) -> None:
-        while self._is_truthy(self._evaluate(stmt.condition)):
-            self._execute(stmt.body)
+        try:
+            while self._is_truthy(self._evaluate(stmt.condition)):
+                self._execute(stmt.body)
+        except BreakError:
+            pass
+
+    def visit_break_stmt(self, stmt: Token):
+        raise BreakError()
 
     def _check_number_operand(self, operator: Token, operand: object):
         if isinstance(operand, float):
@@ -185,6 +214,10 @@ class Interpreter(StmtVisitor, ExprVisitor):
 
     def visit_exprstmt_stmt(self, stmt: ExprStmt) -> None:
         self._evaluate(stmt.expression)
+
+    def visit_function_stmt(self, stmt: Function) -> None:
+        function: LoxFunction = LoxFunction(stmt)
+        self._environment.define(stmt.name.lexeme, function)
 
     def visit_if_stmt(self, stmt: If):
         if self._is_truthy(self._evaluate(stmt.condition)):

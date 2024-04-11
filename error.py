@@ -29,3 +29,7 @@ class LoxRuntimeError(RuntimeError):
     def __init__(self, token: Token, *args):
         super().__init__(*args)
         self.token = token
+
+
+class BreakError(Exception):
+    pass
