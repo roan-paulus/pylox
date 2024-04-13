@@ -37,7 +37,8 @@ class Lox:
 
     def run_prompt(self) -> None:
         while (line := input("> ")) not in ["", ".quit"]:
-            if not line.endswith(";"):
+            line = line.strip()
+            if not (line.endswith("}") or line.endswith(";")):
                 line += ";"
             self.run(line, self._interpreter.repl_interpret)
             self._error_handler.had_error = False

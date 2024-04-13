@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 import time
 
 from Stmt import Function
+from lox_return import LoxReturn
 from environment import Environment
 
 
@@ -31,7 +32,10 @@ class LoxFunction(LoxCallable):
         for i, param in enumerate(self.declaration.params):
             environment.define(param.lexeme, arguments[i])
 
-        interpreter._execute_block(self.declaration.body, environment)
+        try:
+            interpreter._execute_block(self.declaration.body, environment)
+        except LoxReturn as r:
+            return r.value
 
         return None
 

@@ -1,6 +1,6 @@
 from ttoken import Token
 from Expr import Expr, Variable, Binary, Ternary, Unary, Literal, Grouping, Assign, Logical, Call
-from Stmt import Stmt, Var, Print, ExprStmt, Block, If, While, Break, Function
+from Stmt import Stmt, Var, Print, ExprStmt, Block, If, While, Break, Function, Return
 from tokentype import TokenType
 from error import ErrorHandler
 
@@ -52,6 +52,8 @@ class Parser:
             return self._if_statement()
         if self._match(TokenType.PRINT):
             return self._print_statement()
+        if self._match(TokenType.RETURN):
+            return self._return_statement()
         if self._match(TokenType.WHILE):
             return self._while_statement()
         if self._match(TokenType.LEFT_BRACE):
@@ -119,6 +121,15 @@ class Parser:
         value: Expr = self._expression()
         self._consume(TokenType.SEMICOLON, "Expect ';' after value.")
         return Print(value)
+
+    def _return_statement(self):
+        keyword: Token = self._previous()
+        value: None | Expr = None
+        if not self._check(TokenType.SEMICOLON):
+            value = self._expression()
+
+        self._consume(TokenType.SEMICOLON, "Expect ';' after return value.")
+        return Return(keyword, value)
 
     def _var_declaration(self):
         name: Token = self._consume(TokenType.IDENTIFIER, "Expect variable name.")
@@ -359,6 +370,9 @@ class Parser:
                     return
 
             self._advance()
+
+        # We are at the end so bubble out higher
+        raise ParseError
 
     def _check(self, tokentype: TokenType) -> bool:
         if self._is_at_end():

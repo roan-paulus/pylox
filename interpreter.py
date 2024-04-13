@@ -1,11 +1,12 @@
 from visitor import StmtVisitor, ExprVisitor
-from Stmt import Stmt, ExprStmt, Print, Var, If, While, Function
+from Stmt import Stmt, ExprStmt, Print, Var, If, While, Function, Return
 from Expr import Expr, Binary, Ternary, Grouping, Literal, Unary, Variable, Assign, Logical, Call
 from tokentype import TokenType as TT
 from ttoken import Token
 from error import ErrorHandler, LoxRuntimeError, BreakError
 from environment import Environment, Unitialized
 from callable import LoxCallable, LoxFunction, LoxClock
+from lox_return import LoxReturn
 
 
 class Interpreter(StmtVisitor, ExprVisitor):
@@ -230,6 +231,12 @@ class Interpreter(StmtVisitor, ExprVisitor):
     def visit_print_stmt(self, stmt: Print) -> None:
         value: object = self._evaluate(stmt.expression)
         print(self._stringify(value))
+
+    def visit_return_stmt(self, stmt: Return) -> None:
+        value: object | None = None
+        if stmt.value is not None:
+            value = self._evaluate(stmt.value)
+        raise LoxReturn(value)
 
     def visit_var_stmt(self, stmt: Var) -> None:
         value = Unitialized()
