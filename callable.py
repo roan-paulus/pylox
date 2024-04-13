@@ -23,11 +23,12 @@ class LoxCallable(ABC):
 
 
 class LoxFunction(LoxCallable):
-    def __init__(self, declaration: Function) -> None:
+    def __init__(self, declaration: Function, closure: Environment) -> None:
         self.declaration = declaration
+        self.closure = closure
 
     def call(self, interpreter: Interpreter, arguments: list[object]) -> object:
-        environment: Environment = Environment(interpreter.globals)
+        environment: Environment = Environment(self.closure)
 
         for i, param in enumerate(self.declaration.params):
             environment.define(param.lexeme, arguments[i])
